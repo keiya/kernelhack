@@ -3,35 +3,37 @@
 
 #define MAX_BUFFER_LIMIT 256
 
-
-SYSCALL_DEFINE1( my_syscall, char __user *, ubuf )
+SYSCALL_DEFINE2( my_syscall, char __user *, ubuf, int , size )
 {
-	long err;
-
-	char kbuf[MAX_BUFFER_LIMIT];
+    char kbuf[MAX_BUFFER_LIMIT];
     char tmp;
     int len;
     int i;
 
-    access_ok( VERIFY_WRITE, ubuf, MAX_BUFFER_LIMIT );
+    if ( ! access_ok( VERIFY_WRITE, ubuf, MAX_BUFFER_LIMIT )) {
+      printk("<MY_SYSCALL>access_ok() failed\n");
+      return (-EFAULT);
+    }
 
     len = strlen_user(ubuf) - 1;
+    if (len > size)
+      len = size;
     if( MAX_BUFFER_LIMIT < len )
     {
+        printk("<MY_SYSCALL>exeed MAX_BUFFER_LIMIT\n");
         return( -ENOMEM );
     }
 
-    err = strncpy_from_user(kbuf,ubuf,len);
+    if ( ! strncpy_from_user(kbuf,ubuf,len)) {
+      printk("<MY_SYSCALL>strncpy_from_user() failed\n");
+      return (-EFAULT);
+    }
 
     for (i=0; i<len/2; ++i) {
         tmp = kbuf[i];
         kbuf[i] = kbuf[len-1-i];
         kbuf[len-1-i] = tmp;
-    printk( "<MY_SYSCALL><LOOP>%d,%d, %s,%c\n", i,len-1-i,kbuf,kbuf[i] );
     }
-    printk( "<MY_SYSCALL>%d, %s\n", len,kbuf );
 
-    err = copy_to_user( ubuf, kbuf, len );
-    	
-    return( err );
+    return copy_to_user( ubuf, kbuf, len );
 }
