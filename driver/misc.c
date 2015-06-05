@@ -10,6 +10,7 @@
 MODULE_LICENSE("GPL");
 
 char buf[MAX_BUF_SZ];
+size_t buf_sz = 0;
 
 void printm(const char *func, const char *msg)
 {
@@ -28,13 +29,28 @@ static int misc_open(struct inode *inode, struct file *fp)
 
 static ssize_t misc_read(struct file *fp, char __user *ubuf, size_t size, loff_t *ppos)
 {
-    if (unlikely(copy_to_user(ubuf, buf, size))) {
+    int read_size;
+    int offset;
+
+    read_size = size;
+
+    if (size > buf_sz)
+      read_size = buf_sz;
+    else
+      read_size = size;
+
+    if (unlikely(copy_to_user(ubuf, buf, read_size))) {
         return -EFAULT;
     }
 
     printmn(__func__,"size=",size);
-    printk("<miscv2>%s",buf);
-    return size;
+    printk("<miscv2>>>>>>read_sz=%d,ptr=%p\n",read_size,ppos);
+
+    *ppos += read_size;
+    buf_sz -= read_size;
+
+    printk("<miscv2><<<<<read_sz=%d,ptr=%p\n",read_size,ppos);
+	return read_size;
 }
 
 static ssize_t misc_write(struct file *fp, const char __user *ubuf, size_t size, loff_t *ppos)
@@ -47,6 +63,8 @@ static ssize_t misc_write(struct file *fp, const char __user *ubuf, size_t size,
     }
     printmn(__func__,"size=",size);
     printk("<miscv2>%s\n",buf);
+
+    buf_sz += size;
 
     return size;
 }
