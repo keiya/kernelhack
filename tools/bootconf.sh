@@ -1,6 +1,10 @@
 #!/bin/bash
-sudo mv ~/bzImage /boot/vmlinuz-custom
-sudo mv ~/System.map /boot/System.map-custom
-sudo update-initramfs -c -k custom
+VER="4.0.5"
+cd ~
+sudo cp ~/bzImage /boot/vmlinuz-$VER
+sudo cp ~/System.map /boot/System.map-$VER
+tar xf ~/_modules.tar
+sudo cp -r ~/lib/modules/* /lib/modules/
+sudo update-initramfs -c -k $VER
 sudo update-grub
 
