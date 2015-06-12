@@ -15,7 +15,6 @@
 #define PKTSIZ 1480
 struct options_s { int fd; };
 struct sockaddr_in vpn_addr;
-int connect_port;
 
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
