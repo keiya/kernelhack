@@ -13,8 +13,9 @@
 
 // normal ethernet frame 1500bytes - Smallest IP header 20bytes = 1480
 #define PKTSIZ 1480
-
 struct options_s { int fd; };
+struct sockaddr_in vpn_addr;
+int connect_port;
 
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
@@ -23,6 +24,25 @@ struct options_s { int fd; };
  *                                                    ^^^^^^^^^
  * cited: ISBN 978-4-87311-501-6
  */
+
+void parse_args (int argc, char *argv[])
+{
+    int command;
+    while((command = getopt(argc, argv, "h:p:")) != -1){
+        switch(command){
+            case 'a':
+                vpn_addr.sin_addr.s_addr = inet_addr(optarg);
+                break;
+            case 'p':
+                vpn_addr.sin_port = htons(atoi(optarg));
+                break;
+            default:
+                ;
+        }
+    }
+
+}
+
 
 int tun_open(void)
 {
@@ -68,10 +88,7 @@ void* tunlisten(void *args)
         perror("socket");
         exit(1);
     }
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(12345);
-    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    vpn_addr.sin_family = AF_INET;
 
     while (1) {
         fd_set fds;
@@ -89,7 +106,7 @@ void* tunlisten(void *args)
             printf("%d\n",len);
 
             // encapsulate a packet and send to VPN server
-            sendto(sock, pkt, len, 0, (struct sockaddr *)&addr, sizeof(addr));
+            sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
         }
     }
 }
@@ -145,11 +162,11 @@ void* vpnlisten(void *args)
 
 int main(int argc, char **argv)
 {
-    struct options_s options;
+    parse_args(argc, argv);
 
+    struct options_s options;
     options.fd = tun_open();
 
-    struct sockaddr_in addr;
 
     pthread_t thread_vpn;
     pthread_t thread_tun;
