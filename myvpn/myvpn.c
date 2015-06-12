@@ -28,7 +28,7 @@ int connect_port;
 void parse_args (int argc, char *argv[])
 {
     int command;
-    while((command = getopt(argc, argv, "h:p:")) != -1){
+    while((command = getopt(argc, argv, "a:p:")) != -1){
         switch(command){
             case 'a':
                 vpn_addr.sin_addr.s_addr = inet_addr(optarg);
