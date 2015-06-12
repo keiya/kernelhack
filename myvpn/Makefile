@@ -1,7 +1,4 @@
-myvpn: client server
+myvpn: myvpn
 
-client: client.c
-	gcc -Wall -O2 -o client client.c
-
-server: server.c
-	gcc -Wall -O2 -o server server.c
+myvpn: myvpn.c
+	gcc -Wall -O2 -pthread -o myvpn myvpn.c
