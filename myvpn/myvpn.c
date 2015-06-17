@@ -24,16 +24,22 @@ struct sockaddr_in vpn_addr;
  * cited: ISBN 978-4-87311-501-6
  */
 
-void parse_args (int argc, char *argv[])
+void parse_args (int argc, char *argv[], char *ifconfig)
 {
     int command;
-    while((command = getopt(argc, argv, "a:p:")) != -1){
+    while((command = getopt(argc, argv, "a:p:t:")) != -1){
         switch(command){
             case 'a':
+                // VPN peer to connect
                 vpn_addr.sin_addr.s_addr = inet_addr(optarg);
                 break;
             case 'p':
+                // VPN peer port
                 vpn_addr.sin_port = htons(atoi(optarg));
+                break;
+            case 't':
+                // configuration (ifconfig) of local tun device
+                strncpy(ifconfig,optarg,255);
                 break;
             default:
                 ;
@@ -43,7 +49,7 @@ void parse_args (int argc, char *argv[])
 }
 
 
-int tun_open(void)
+int tun_open(char *ifconfig)
 {
     struct ifreq ifr;
     int fd;
@@ -59,7 +65,8 @@ int tun_open(void)
     
     strncpy(dev,ifr.ifr_name,IFNAMSIZ);
     
-    sprintf(buf,"ifconfig %s 192.168.1.1 pointopoint 192.168.1.2",dev);
+    //sprintf(buf,"ifconfig %s 192.168.1.1 pointopoint 192.168.1.2",dev);
+    sprintf(buf,ifconfig,dev);
     system(buf);
     
     return fd;
@@ -161,10 +168,11 @@ void* vpnlisten(void *args)
 
 int main(int argc, char **argv)
 {
-    parse_args(argc, argv);
+    char ifconfig[256];
+    parse_args(argc, argv,&ifconfig);
 
     struct options_s options;
-    options.fd = tun_open();
+    options.fd = tun_open(ifconfig);
 
 
     pthread_t thread_vpn;
