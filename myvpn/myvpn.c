@@ -11,8 +11,10 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 
+// VPNのエンカプセレーションで1500bytesまるまる送るとオーバーヘッドありそうなので
+// 1500-ipヘッダ20-MACヘッダ18 で余裕見て1450
 // normal ethernet frame 1500bytes - Smallest IP header 20bytes = 1480
-#define PKTSIZ 1480
+#define PKTSIZ 1450
 struct options_s { int fd; };
 struct sockaddr_in vpn_addr;
 
