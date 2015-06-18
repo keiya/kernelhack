@@ -23,7 +23,7 @@ myvpn.cはサーバー・クライアントの概念はありません。Peer to
 クライアントの最初のパケットで、firewallに穴があき、NATに変換テーブルが作られるため、おそらく普通のネットワークなら利用できる。
 ### サーバ
 ```
-./myvpn\_nat -s 12345 -t "ifconfig %s 192.168.1.2 mtu 1450 pointopoint 192.168.1.1"
+./myvpn_nat -s 12345 -t "ifconfig %s 192.168.1.2 mtu 1450 pointopoint 192.168.1.1"
 ```
 * -s バインドポート（このUDPポートでリッスン）
 * -t ifconfig 設定文字列。
@@ -34,7 +34,7 @@ tcpdump -vvv -i eth0 host 160.16.95.238 and not port 22 and \("ip[6:2] & 0x2000 
 ```
 ### クライアント
 ```
-./myvpn\_nat -a 160.16.95.238 -p 12345 -t "ifconfig %s 192.168.1.1 mtu 1450  pointopoint 192.168.1.2"
+./myvpn_nat -a 160.16.95.238 -p 12345 -t "ifconfig %s 192.168.1.1 mtu 1450  pointopoint 192.168.1.2"
 ```
 * -a サーバのIPアドレス
 * -p サーバーのポート
