@@ -39,7 +39,9 @@ myvpn.cはサーバー・クライアントの概念はありません。Peer to
 * -s バインドポート（このUDPポートでリッスン）
 * -t ifconfig 設定文字列。
   * MTUはLAN内なら1450くらいでOK（詳しく調べてない）
-  * 筑波大学→さくらVPSは1422
+  * フレッツ光ネクスト 1426 （1454からIPヘッダ20とUDPヘッダ8を引く）でフラグメント発生なし。調査はtcpdumpで行った
+  
+  tcpdump -vvv -i eth0 host 160.16.95.238 and not port 22 and \("ip[6:2] & 0x2000 == 0x2000" or "ip[6:2] & 0x1fff != 0x0000"\)
 
 クライアント
 ./myvpn_nat -a 160.16.95.238 -p 12345 -t "ifconfig %s 192.168.1.1 mtu 1450  pointopoint 192.168.1.2"
