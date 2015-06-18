@@ -7,6 +7,7 @@
 * 課題
   * latencyがある（1ms+）
   * 謎のパケットロス？
+  
 # 使い方
 ## myvpn.c (firewall通過不可)
 myvpn.cはサーバー・クライアントの概念はありません。Peer to Peerな関係です。
