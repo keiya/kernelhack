@@ -38,7 +38,7 @@ myvpn.cはサーバー・クライアントの概念はありません。Peer to
 * -s バインドポート（このUDPポートでリッスン）
 * -t ifconfig 設定文字列。
   * MTUはLAN内なら1450くらいでOK（詳しく調べてない）
-  * フレッツ光ネクスト 1426 （1454からIPヘッダ20とUDPヘッダ8を引く）でフラグメント発生なし。調査はtcpdumpで行った
+  * フレッツ光ネクスト 1412 （1454からIPヘッダ20とUDPヘッダ8を引いて、Ethernet Frame 14bytes引く）でフラグメント発生なし。調査はtcpdumpで行った
 ```
 tcpdump -vvv -i eth0 host 160.16.95.238 and not port 22 and \("ip[6:2] & 0x2000 == 0x2000" or "ip[6:2] & 0x1fff != 0x0000"\)
 ```
