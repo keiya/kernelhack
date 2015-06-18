@@ -20,6 +20,7 @@ struct sockaddr_in vpn_addr;
 
 int server_mode = 0;
 int client_src_port;
+int server_bind_port;
 
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
@@ -32,20 +33,20 @@ int client_src_port;
 void parse_args (int argc, char *argv[], char *ifconfig)
 {
     int command;
-    while((command = getopt(argc, argv, "a:p:st:")) != -1){
+    while((command = getopt(argc, argv, "a:p:s:t:")) != -1){
         switch(command){
             case 'a':
                 // VPN peer to connect
                 vpn_addr.sin_addr.s_addr = inet_addr(optarg);
                 break;
             case 's':
-                // VPN peer port
+                // server mode (specify bind port)
                 server_mode = 1;
+                server_bind_port = atoi(optarg);
                 break;
             case 'p':
-                // VPN peer port
+                // client mode (specify server's port)
                 vpn_addr.sin_port = htons(atoi(optarg));
-                client_src_port = atoi(optarg);
                 break;
             case 't':
                 // configuration (ifconfig) of local tun device
@@ -182,10 +183,22 @@ int main(int argc, char **argv)
     }
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(12345);
+    if (server_mode)
+        addr.sin_port = htons(server_bind_port);
+    else
+        addr.sin_port = 0;
     addr.sin_addr.s_addr = INADDR_ANY;
 
     bind(options.sock, (struct sockaddr *)&addr, sizeof(addr));
+
+struct sockaddr_in sin = {};
+socklen_t slen;
+int sock;
+short unsigned int port;
+slen = sizeof(sin);
+getsockname(options.sock, (struct sockaddr *)&sin, &slen);
+port = ntohs(sin.sin_port);
+printf("client src = %d\n",port);
 
     pthread_t thread_vpn;
     pthread_t thread_tun;
