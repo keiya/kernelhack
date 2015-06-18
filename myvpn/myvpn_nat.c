@@ -19,8 +19,9 @@ struct options_s { int fd;int sock; };
 struct sockaddr_in vpn_addr;
 
 int server_mode = 0;
-int client_src_port;
+//int client_src_port;
 int server_bind_port;
+struct sockaddr_in senderinfo;
 
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
@@ -36,20 +37,20 @@ void parse_args (int argc, char *argv[], char *ifconfig)
     while((command = getopt(argc, argv, "a:p:s:t:")) != -1){
         switch(command){
             case 'a':
-                // VPN peer to connect
+                // [client] VPN peer to connect
                 vpn_addr.sin_addr.s_addr = inet_addr(optarg);
                 break;
             case 's':
-                // server mode (specify bind port)
+                // [server] server mode (specify bind port)
                 server_mode = 1;
                 server_bind_port = atoi(optarg);
                 break;
             case 'p':
-                // client mode (specify server's port)
+                // [client] server's port
                 vpn_addr.sin_port = htons(atoi(optarg));
                 break;
             case 't':
-                // configuration (ifconfig) of local tun device
+                // [client&server] configuration (ifconfig) of local tun device
                 strncpy(ifconfig,optarg,255);
                 break;
             default:
@@ -112,16 +113,18 @@ void* tunlisten(void *args)
         FD_SET(fd,&fds);
 
 
-        printf("srcport = %d\n",client_src_port);
-        if (server_mode)
-            vpn_addr.sin_port = htons(client_src_port);
+        if (server_mode) {
+            vpn_addr.sin_port = senderinfo.sin_port;
+            vpn_addr.sin_addr.s_addr = senderinfo.sin_addr.s_addr;
+        }
 
         select(fd + 1, &fds, NULL, NULL, NULL);
         if (FD_ISSET(fd,&fds)) {
             len = read(fd,pkt,PKTSIZ);
-            if (len <= 0) return;
-            dump_pkt(pkt,len);
-            printf("%d\n",len);
+            //len = read(fd,pkt,PKTSIZ);
+            //if (len <= 0) return;
+            //dump_pkt(pkt,len);
+            //printf("%d\n",len);
 
             // encapsulate a packet and send to VPN server
             sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
@@ -144,28 +147,26 @@ void* vpnlisten(void *args)
 
     size_t len;
 
-    struct sockaddr_in senderinfo;
     socklen_t addrlen;
         addrlen = sizeof(senderinfo);
-char senderstr[16];
 
     while(1) {
         //int byte = recv(sock, &buf, PKTSIZ, 0);
 
         int byte = recvfrom(sock, buf, sizeof(buf) - 1, 0,
         (struct sockaddr *)&senderinfo, &addrlen);
-        inet_ntop(AF_INET, &senderinfo.sin_addr, senderstr, sizeof(senderstr));
-        client_src_port = ntohs(senderinfo.sin_port);
-        printf("recvfrom : %s, port=%d\n", senderstr, client_src_port);
+        //client_src_port = ntohs(senderinfo.sin_port);
+        //printf("recvfrom : %s, port=%d\n", senderstr, client_src_port);
 
         //len = sendto(tunsock, &buf, byte, 0,
         //(struct sockaddr *)&ip_dst, sizeof(struct sockaddr_in));
-        len = write(fd,&buf,byte);
-        if (len < 0) {
-          perror("sendto");
-          exit(1);
-        }
-        printf("\n");
+        write(fd,&buf,byte);
+        //len = write(fd,&buf,byte);
+        //if (len < 0) {
+        //  perror("sendto");
+        //  exit(1);
+        //}
+        //printf("\n");
     }
 }
 
@@ -200,6 +201,10 @@ getsockname(options.sock, (struct sockaddr *)&sin, &slen);
 port = ntohs(sin.sin_port);
 printf("client src = %d\n",port);
 
+        if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        perror("socket");
+        exit(1);
+    }
     pthread_t thread_vpn;
     pthread_t thread_tun;
 
