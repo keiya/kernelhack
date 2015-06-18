@@ -1,3 +1,12 @@
+# 構造
+* 2スレッド構造
+  * tunを監視→IPパケットが流れてきたら、UDPにカプセル化してVPNサーバに送信
+  * VPNソケット監視→UDPが流れてきたら、ペイロード部分をtunに流す
+* file descripterはselectで監視
+  * チューニングの余地→epoll
+* 課題
+  * latencyがある（1ms+）
+  * 謎のパケットロス？
 # 使い方
 ## myvpn.c (firewall通過不可)
 myvpn.cはサーバー・クライアントの概念はありません。Peer to Peerな関係です。
