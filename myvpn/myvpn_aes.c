@@ -129,7 +129,7 @@ void* tunlisten(void *args)
             len = read(fd,pkt,PKTSIZ);
             // encapsulate a packet and send to VPN server
   unsigned char encrypted[PKTSIZ];
-  printf("using iv [%s], key [%s]\n",iv,key);
+  printf("[TUN>VPN] using iv [%s]\n",iv,key);
   int encrypted_len = encrypt (&pkt, len,aad ,strlen(aad), key, iv,
                             &encrypted, tag);
   evp_dump(&encrypted,encrypted_len);
@@ -162,7 +162,7 @@ void* vpnlisten(void *args)
         (struct sockaddr *)&senderinfo, &addrlen);
 
   unsigned char decrypted[PKTSIZ];
-  printf("using iv [%s], key [%s]\n",iv,key);
+  printf("[VPN>TUN] using iv [%s]\n",iv,key);
   int decrypted_len = decrypt(&buf, byte, aad, strlen(aad), tag, key, iv,
     &decrypted);
   evp_dump(&buf,byte);

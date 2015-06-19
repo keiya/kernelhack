@@ -12,7 +12,6 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
     int aad_len, unsigned char *key, unsigned char *iv,
     unsigned char *ciphertext, unsigned char *tag)
 {
-  printf("encrypt() = %s (%d)\n",plaintext,plaintext_len);
     EVP_CIPHER_CTX *ctx;
 
     int len;
