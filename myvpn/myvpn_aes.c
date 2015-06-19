@@ -137,9 +137,13 @@ void* tunlisten(void *args)
   int encrypted_len = encrypt (&pkt, len,aad ,strlen(aad), key, iv,
                             &encrypted, tag);
 #ifdef DEBUG
+  printf("%32s %16s\n",key,iv);
   printf("[TUN>VPN] %d->%d\n",len,encrypted_len);
   evp_dump(&encrypted,encrypted_len);
-  evp_dump(&pkt,len);
+  unsigned char decrypted[PKTSIZ];
+  int decrypted_len = decrypt(&encrypted, encrypted_len, aad, strlen(aad), tag, key, iv,
+    &decrypted);
+  evp_dump(&decrypted,decrypted_len);
 #endif
             //sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
             sendto(sock, &encrypted, encrypted_len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
@@ -170,9 +174,10 @@ void* vpnlisten(void *args)
 
 
   unsigned char decrypted[PKTSIZ];
-  int decrypted_len = decrypt(&buf, byte, aad, strlen(aad), tag, key, iv,
+  int decrypted_len = decrypt(buf, byte, aad, strlen(aad), tag, key, iv,
     &decrypted);
 #ifdef DEBUG
+  printf("%32s %16s\n",key,iv);
   printf("[VPN>TUN] %d->%d\n",byte,decrypted_len);
   evp_dump(&buf,byte);
   evp_dump(&decrypted,decrypted_len);
