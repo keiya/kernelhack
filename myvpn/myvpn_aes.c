@@ -136,7 +136,8 @@ void* tunlisten(void *args)
   evp_dump(&encrypted,encrypted_len);
   evp_dump(&pkt,len);
 #endif
-            sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
+            //sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
+            sendto(sock, encrypted, encrypted_len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
         }
     }
 }
@@ -172,7 +173,8 @@ void* vpnlisten(void *args)
   evp_dump(&decrypted,decrypted_len);
 #endif
 
-        write(fd,&buf,byte);
+        //write(fd,&buf,byte);
+        write(fd,&decrypted,decrypted_len);
     }
 }
 
