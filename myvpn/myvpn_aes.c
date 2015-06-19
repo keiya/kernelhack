@@ -14,6 +14,7 @@
 #include "evp_gcm.h"
 
 #define PKTSIZ 1500
+#define DEBUG 1
 struct options_s { int fd;int sock; };
 struct sockaddr_in vpn_addr;
 
@@ -21,10 +22,14 @@ int server_mode = 0;
 //int client_src_port;
 int server_bind_port;
 struct sockaddr_in senderinfo;
-unsigned char key[32] = "01234567890123456789012345678901";
+//unsigned char key[32] = "01234567890123456789012345678901";
+//unsigned char iv[16] = "01234567890123456";
+unsigned char *key = (unsigned char *)"01234567890123456789012345678901";
 unsigned char *iv = (unsigned char *)"01234567890123456";
 unsigned char tag[16] = "test";
 unsigned char aad[16] = "";
+unsigned int decrypt_bytes;
+unsigned int encrypt_bytes;
 
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
@@ -132,12 +137,12 @@ void* tunlisten(void *args)
   int encrypted_len = encrypt (&pkt, len,aad ,strlen(aad), key, iv,
                             &encrypted, tag);
 #ifdef DEBUG
-  printf("[TUN>VPN] using iv [%s]\n",iv,key);
+  printf("[TUN>VPN] %d->%d\n",len,encrypted_len);
   evp_dump(&encrypted,encrypted_len);
   evp_dump(&pkt,len);
 #endif
             //sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
-            sendto(sock, encrypted, encrypted_len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
+            sendto(sock, &encrypted, encrypted_len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
         }
     }
 }
@@ -168,13 +173,16 @@ void* vpnlisten(void *args)
   int decrypted_len = decrypt(&buf, byte, aad, strlen(aad), tag, key, iv,
     &decrypted);
 #ifdef DEBUG
-  printf("[VPN>TUN] using iv [%s]\n",iv,key);
+  printf("[VPN>TUN] %d->%d\n",byte,decrypted_len);
   evp_dump(&buf,byte);
   evp_dump(&decrypted,decrypted_len);
 #endif
 
         //write(fd,&buf,byte);
-        write(fd,&decrypted,decrypted_len);
+        if (decrypted_len < 0 )
+          printf("decrypt failed\n");
+        else
+        write(fd,decrypted,decrypted_len);
     }
 }
 

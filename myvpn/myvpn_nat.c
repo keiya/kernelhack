@@ -19,6 +19,7 @@ int server_mode = 0;
 //int client_src_port;
 int server_bind_port;
 struct sockaddr_in senderinfo;
+unsigned char iv[16];
 
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
@@ -115,7 +116,7 @@ void* tunlisten(void *args)
             vpn_addr.sin_addr.s_addr = senderinfo.sin_addr.s_addr;
         }
 
-        select(fd + 1, &fds, NULL, NULL, NULL);
+        //select(fd + 1, &fds, NULL, NULL, NULL);
         if (FD_ISSET(fd,&fds)) {
             len = read(fd,pkt,PKTSIZ);
             //len = read(fd,pkt,PKTSIZ);
