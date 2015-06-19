@@ -21,7 +21,7 @@ int server_mode = 0;
 //int client_src_port;
 int server_bind_port;
 struct sockaddr_in senderinfo;
-unsigned char *key = (unsigned char *)"01234567890123456789012345678901";
+unsigned char key[32] = "01234567890123456789012345678901";
 unsigned char *iv = (unsigned char *)"01234567890123456";
 unsigned char tag[16] = "test";
 unsigned char aad[16] = "";
@@ -58,7 +58,7 @@ void parse_args (int argc, char *argv[], char *ifconfig)
                 break;
             case 'k':
                 // specify key
-                strncpy(key,optarg,32);
+                memcpy(key,optarg,32);
                 break;
             default:
                 ;
