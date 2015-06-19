@@ -73,3 +73,9 @@ iptables -t nat -I POSTROUTING -o eth0 \
       -s 192.168.1.1/32 -j MASQUERADE
 ```
 ## myvpn\_aes.c (secured by OpenSSL!)
+いちパケットごとに同じIV使うとやばそう。
+となると、あとのパケットは前のパケットの暗号の状態を利用する実装にしたい。
+が、到着順が保証されないUDPだと無理ではないかな。
+### 解決策？
+ * TCPにする（遅い）
+
