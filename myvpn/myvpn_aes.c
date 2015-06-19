@@ -124,9 +124,13 @@ void* tunlisten(void *args)
         if (FD_ISSET(fd,&fds)) {
             len = read(fd,pkt,PKTSIZ);
             // encapsulate a packet and send to VPN server
-  unsigned char encrypted[128];
-  int encrypted_len = encrypt (pkt, strlen (pkt),aad ,strlen(aad), key, iv,
-                            encrypted, tag);
+  unsigned char encrypted[PKTSIZ];
+  int encrypted_len = encrypt (&pkt, len,aad ,strlen(aad), key, iv,
+                            &encrypted, tag);
+  printf("encrypted %d bytes\n",encrypted_len);
+  evp_dump(&encrypted,encrypted_len);
+  evp_dump(&pkt,len);
+
             sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
         }
     }
@@ -152,6 +156,11 @@ void* vpnlisten(void *args)
 
         int byte = recvfrom(sock, buf, sizeof(buf) - 1, 0,
         (struct sockaddr *)&senderinfo, &addrlen);
+
+  unsigned char decrypted[PKTSIZ];
+  int decrypted_len = decrypt(&buf, byte, aad, strlen(aad), tag, key, iv,
+    &decrypted);
+  evp_dump(&decrypted,decrypted_len);
 
         write(fd,&buf,byte);
     }

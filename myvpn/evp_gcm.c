@@ -1,3 +1,4 @@
+// https://wiki.openssl.org/index.php/EVP_Authenticated_Encryption_and_Decryption
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,7 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
     int aad_len, unsigned char *key, unsigned char *iv,
     unsigned char *ciphertext, unsigned char *tag)
 {
+  printf("encrypt() = %s (%d)\n",plaintext,plaintext_len);
     EVP_CIPHER_CTX *ctx;
 
     int len;
@@ -121,4 +123,7 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
         return -1;
     }
 }
-
+void evp_dump(unsigned char *ciphertext, int ciphertext_len)
+{
+  BIO_dump_fp (stdout, ciphertext, ciphertext_len);
+}
