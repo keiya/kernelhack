@@ -132,6 +132,7 @@ void* tunlisten(void *args)
   printf("using iv [%s], key [%s]\n",iv,key);
   int encrypted_len = encrypt (&pkt, len,aad ,strlen(aad), key, iv,
                             &encrypted, tag);
+  evp_dump(&enctypted,encrypted_len);
   evp_dump(&pkt,len);
 
             sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
@@ -164,6 +165,8 @@ void* vpnlisten(void *args)
   printf("using iv [%s], key [%s]\n",iv,key);
   int decrypted_len = decrypt(&buf, byte, aad, strlen(aad), tag, key, iv,
     &decrypted);
+  evp_dump(&encrypted,encrypted_len);
+  evp_dump(&pkt,len);
 
         write(fd,&buf,byte);
     }
