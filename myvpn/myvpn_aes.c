@@ -165,7 +165,7 @@ void* vpnlisten(void *args)
   printf("using iv [%s], key [%s]\n",iv,key);
   int decrypted_len = decrypt(&buf, byte, aad, strlen(aad), tag, key, iv,
     &decrypted);
-  evp_dump(&encrypted,encrypted_len);
+  evp_dump(&decrypted,encrypted_len);
   evp_dump(&pkt,len);
 
         write(fd,&buf,byte);
