@@ -36,8 +36,10 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
     /* Provide any AAD data. This can be called zero or more times as
      * required
      */
+    /*
     if(1 != EVP_EncryptUpdate(ctx, NULL, &len, aad, aad_len))
         handleErrors();
+        */
 
     /* Provide the message to be encrypted, and obtain the encrypted output.
      * EVP_EncryptUpdate can be called multiple times if necessary
@@ -53,8 +55,10 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
     ciphertext_len += len;
 
     /* Get the tag */
+    /*
     if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag))
         handleErrors();
+        */
 
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
@@ -88,8 +92,10 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
     /* Provide any AAD data. This can be called zero or more times as
      * required
      */
+    /*
     if(!EVP_DecryptUpdate(ctx, NULL, &len, aad, aad_len))
         handleErrors();
+        */
 
     /* Provide the message to be decrypted, and obtain the plaintext output.
      * EVP_DecryptUpdate can be called multiple times if necessary
@@ -99,8 +105,10 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
     plaintext_len = len;
 
     /* Set expected tag value. Works in OpenSSL 1.0.1d and later */
+    /*
     if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, tag))
         handleErrors();
+        */
 
     /* Finalise the decryption. A positive return value indicates success,
      * anything else is a failure - the plaintext is not trustworthy.
