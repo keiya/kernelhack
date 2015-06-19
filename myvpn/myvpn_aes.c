@@ -23,8 +23,8 @@ int server_bind_port;
 struct sockaddr_in senderinfo;
 unsigned char *key = (unsigned char *)"01234567890123456789012345678901";
 unsigned char *iv = (unsigned char *)"01234567890123456";
-  unsigned char tag[16] = "test";
-  unsigned char aad[16] = "";
+unsigned char tag[16] = "test";
+unsigned char aad[16] = "";
 
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
@@ -37,7 +37,7 @@ unsigned char *iv = (unsigned char *)"01234567890123456";
 void parse_args (int argc, char *argv[], char *ifconfig)
 {
     int command;
-    while((command = getopt(argc, argv, "a:p:s:t:")) != -1){
+    while((command = getopt(argc, argv, "a:p:s:t:k:")) != -1){
         switch(command){
             case 'a':
                 // [client] VPN peer to connect
@@ -55,6 +55,10 @@ void parse_args (int argc, char *argv[], char *ifconfig)
             case 't':
                 // [client&server] configuration (ifconfig) of local tun device
                 strncpy(ifconfig,optarg,255);
+                break;
+            case 'k':
+                // specify key
+                strncpy(key,optarg,32);
                 break;
             default:
                 ;
@@ -125,10 +129,9 @@ void* tunlisten(void *args)
             len = read(fd,pkt,PKTSIZ);
             // encapsulate a packet and send to VPN server
   unsigned char encrypted[PKTSIZ];
+  printf("using iv [%s], key [%s]\n",iv,key);
   int encrypted_len = encrypt (&pkt, len,aad ,strlen(aad), key, iv,
                             &encrypted, tag);
-  printf("encrypted %d bytes\n",encrypted_len);
-  evp_dump(&encrypted,encrypted_len);
   evp_dump(&pkt,len);
 
             sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
@@ -158,9 +161,9 @@ void* vpnlisten(void *args)
         (struct sockaddr *)&senderinfo, &addrlen);
 
   unsigned char decrypted[PKTSIZ];
+  printf("using iv [%s], key [%s]\n",iv,key);
   int decrypted_len = decrypt(&buf, byte, aad, strlen(aad), tag, key, iv,
     &decrypted);
-  evp_dump(&decrypted,decrypted_len);
 
         write(fd,&buf,byte);
     }
