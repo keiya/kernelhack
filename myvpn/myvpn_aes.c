@@ -10,8 +10,7 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <arpa/inet.h>
-#include <openssl/evp.h>
-#include "evp_gcm.h"
+#include "aes_ctr.h"
 
 #define PKTSIZ 1500
 #define DEBUG 1
@@ -19,18 +18,10 @@ struct options_s { int fd;int sock; };
 struct sockaddr_in vpn_addr;
 
 int server_mode = 0;
-//int client_src_port;
 int server_bind_port;
 struct sockaddr_in senderinfo;
-//unsigned char key[32] = "01234567890123456789012345678901";
-//unsigned char iv[16] = "01234567890123456";
-unsigned char *key = (unsigned char *)"01234567890123456789012345678901";
-unsigned char *iv = (unsigned char *)"01234567890123456";
-unsigned char tag[16] = "test";
-unsigned char aad[16] = "";
-unsigned int decrypt_bytes;
-unsigned int encrypt_bytes;
 
+unsigned char key[32];
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
  * USE FOR >>TESTING<< PURPOSES ONLY
@@ -63,7 +54,7 @@ void parse_args (int argc, char *argv[], char *ifconfig)
                 break;
             case 'k':
                 // specify key
-                memcpy(key,optarg,32);
+                strncpy(key,optarg,32);
                 break;
             default:
                 ;
@@ -115,10 +106,10 @@ void* tunlisten(void *args)
 
     vpn_addr.sin_family = AF_INET;
 
-    while (1) {
-        fd_set fds;
         int len;
         unsigned char pkt[PKTSIZ];
+    while (1) {
+        fd_set fds;
 
         FD_ZERO(&fds);
         FD_SET(fd,&fds);
@@ -129,11 +120,11 @@ void* tunlisten(void *args)
             vpn_addr.sin_addr.s_addr = senderinfo.sin_addr.s_addr;
         }
 
+  unsigned char encrypted[PKTSIZ];
         //select(fd + 1, &fds, NULL, NULL, NULL);
         if (FD_ISSET(fd,&fds)) {
             len = read(fd,pkt,PKTSIZ);
             // encapsulate a packet and send to VPN server
-  unsigned char encrypted[PKTSIZ];
   int encrypted_len = encrypt (pkt, len,aad ,strlen(aad), key, iv,
                             encrypted, tag);
 #ifdef DEBUG
@@ -146,7 +137,7 @@ void* tunlisten(void *args)
   evp_dump(&decrypted,decrypted_len);
 #endif
             //sendto(sock, pkt, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
-            sendto(sock, &encrypted, encrypted_len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
+            sendto(sock, encrypted, encrypted_len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
         }
     }
 }
@@ -167,14 +158,16 @@ void* vpnlisten(void *args)
     socklen_t addrlen;
         addrlen = sizeof(senderinfo);
 
+        int byte;
+int decrypted_len;
+  unsigned char decrypted[PKTSIZ];
     while(1) {
 
-        int byte = recvfrom(sock, buf, sizeof(buf) - 1, 0,
+        byte = recvfrom(sock, buf, sizeof(buf) - 1, 0,
         (struct sockaddr *)&senderinfo, &addrlen);
 
 
-  unsigned char decrypted[PKTSIZ];
-  int decrypted_len = decrypt(buf, byte, aad, strlen(aad), tag, key, iv,
+  decrypted_len = decrypt(buf, byte, aad, strlen(aad), tag, key, iv,
     decrypted);
 #ifdef DEBUG
   printf("%32s %16s\n",key,iv);
@@ -185,8 +178,7 @@ void* vpnlisten(void *args)
 
         //write(fd,&buf,byte);
         if (decrypted_len < 0 )
-          printf("decrypt failed\n");
-        else
+          printf("decrypt failed?\n");
         write(fd,decrypted,decrypted_len);
     }
 }
@@ -230,6 +222,14 @@ printf("client src = %d\n",port);
 
       pthread_t thread_vpn;
     pthread_t thread_tun;
+
+
+    // is it THREAD SAFE??????????????///
+  ERR_load_crypto_strings();
+  OpenSSL_add_all_algorithms();
+  OPENSSL_config(NULL);
+
+
 
     if (pthread_create(&thread_vpn,NULL,vpnlisten,(void *)&options) != 0) {
       fprintf(stderr,"vpn pthread err.\n");
