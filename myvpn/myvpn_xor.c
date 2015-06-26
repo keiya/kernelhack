@@ -130,7 +130,7 @@ void* tunlisten(void *args)
             // encapsulate a packet and send to VPN server
             encrypt(encrypted,pkt,len,key);
 
-            hexdump(encrypted,len);
+            //hexdump(encrypted,len);
 
             sendto(sock, encrypted, len, 0, (struct sockaddr *)&vpn_addr, sizeof(vpn_addr));
         //}
@@ -163,7 +163,9 @@ void* vpnlisten(void *args)
         (struct sockaddr *)&senderinfo, &addrlen);
         decrypt(decrypted,buf,byte,key);
 
+#ifdef DEBUG
         hexdump(decrypted,byte);
+#endif
 
         write(fd,decrypted,byte);
     }
