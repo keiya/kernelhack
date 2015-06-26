@@ -2,11 +2,13 @@
 * 2スレッド構造
   * tunを監視→IPパケットが流れてきたら、UDPにカプセル化してVPNサーバに送信
   * VPNソケット監視→UDPが流れてきたら、ペイロード部分をtunに流す
-* file descripterはselectで監視
-  * チューニングの余地→epoll
+* ~~file descripterはselectで監視~~
+  * ~~チューニングの余地→epoll~~
 * 課題
   * latencyがある（1ms+）
-  * 謎のパケットロス？
+  * ~~謎のパケットロス？~~
+  * ネゴシエーションがなく改ざん、攻撃の踏み台になる可能性
+  * 暗号解読の脆弱性
   
 # 使い方
 ## myvpn.c (firewall通過不可)
@@ -35,8 +37,8 @@ myvpn.cはサーバー・クライアントの概念はありません。Peer to
 ```
 ./myvpn_nat -s 12345 -t "ifconfig %s 192.168.1.2 mtu 1450 pointopoint 192.168.1.1"
 ```
-* -s バインドポート（このUDPポートでリッスン）
-* -t ifconfig 設定文字列。
+* `-s` バインドポート（このUDPポートでリッスン）
+* `-t` ifconfig 設定文字列。
   * MTUはLAN内なら1450くらいでOK（詳しく調べてない）
   * フレッツ光ネクスト 1412 （1454からIPヘッダ20とUDPヘッダ8を引いて、Ethernet Frame 14bytes引く）でフラグメント発生なし。調査はtcpdumpで行った
 ```
@@ -46,14 +48,22 @@ tcpdump -vvv -i eth0 host 160.16.95.238 and not port 22 and \("ip[6:2] & 0x2000 
 ```
 ./myvpn_nat -a 160.16.95.238 -p 12345 -t "ifconfig %s 192.168.1.1 mtu 1450  pointopoint 192.168.1.2"
 ```
-* -a サーバのIPアドレス
-* -p サーバーのポート
+* `-a` サーバのIPアドレス
+* `-p` サーバーのポート
 
 ## myvpn\_xor.c
 パスフレーズをSHA-512でハッシュ化しXORをとって暗号化する。ヘッダも含めたパケット全体を暗号化するが、であるが故に、攻撃には非常に弱い。
 512bit、すなわち64byteごとに同じXOR列で暗号化されるため、IPヘッダのVersionに対応する場所にある、ペイロードのバイト列はすぐに判明する。
-また、当然ながらforward secrecyはない。
+また、当然ながらforward secrecyはない。NSAに一瞬で破られるだろう。
 `-k`を使って鍵を指定できる。
+
+## myvpn\_aes.c (secured by OpenSSL!)
+いちパケットごとに同じIV使うとやばそう。
+となると、あとのパケットは前のパケットの暗号の状態を利用する実装にしたい。
+が、到着順が保証されないUDPだと無理ではないかな。
+### 解決策？
+ * TCPにする（遅い）
+ * AES-CTR mode だとUDPでもいける模様
 
 # 備考
 ## サーバをデフォルトゲートウェイ化
@@ -78,10 +88,4 @@ iptables -I FORWARD -m conntrack --ctstate RELATED,ESTABLISHED \
 iptables -t nat -I POSTROUTING -o eth0 \
       -s 192.168.1.1/32 -j MASQUERADE
 ```
-## myvpn\_aes.c (secured by OpenSSL!)
-いちパケットごとに同じIV使うとやばそう。
-となると、あとのパケットは前のパケットの暗号の状態を利用する実装にしたい。
-が、到着順が保証されないUDPだと無理ではないかな。
-### 解決策？
- * TCPにする（遅い）
 
