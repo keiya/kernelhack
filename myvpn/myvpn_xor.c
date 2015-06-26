@@ -24,8 +24,6 @@ struct sockaddr_in senderinfo;
 
 char passphrase[32];
 char key[SHA512_DIGEST_LENGTH];
-char encrypted[PKTSIZ];
-char decrypted[PKTSIZ];
 
 /*
  * MyVPN, written by Keiya CHINEN <s1011420@coins.tsukuba.ac.jp>
@@ -111,6 +109,7 @@ void* tunlisten(void *args)
 
     vpn_addr.sin_family = AF_INET;
 
+    char encrypted[PKTSIZ];
     while (1) {
         //fd_set fds;
         int len;
@@ -156,6 +155,7 @@ void* vpnlisten(void *args)
     socklen_t addrlen;
         addrlen = sizeof(senderinfo);
 
+    char decrypted[PKTSIZ];
     while(1) {
         //int byte = recv(sock, &buf, PKTSIZ, 0);
 
