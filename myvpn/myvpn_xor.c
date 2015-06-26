@@ -14,6 +14,7 @@
 #include "xor.h"
 
 #define PKTSIZ 1500
+#define PASSSIZ 128
 struct options_s { int fd;int sock; };
 struct sockaddr_in vpn_addr;
 
@@ -22,7 +23,7 @@ int server_mode = 0;
 int server_bind_port;
 struct sockaddr_in senderinfo;
 
-char passphrase[32];
+char passphrase[PASSSIZ];
 char key[SHA512_DIGEST_LENGTH];
 
 /*
@@ -56,7 +57,7 @@ void parse_args (int argc, char *argv[], char *ifconfig)
                 strncpy(ifconfig,optarg,255);
                 break;
             case 'k':
-                strncpy(passphrase,optarg,32);
+                strncpy(passphrase,optarg,PASSSIZ);
                 break;
             default:
                 ;
