@@ -5,13 +5,13 @@
 #define MAX_PASSPHRASE 32
 
 int i=0;
-void decrypt(char* dst, char* src, unsigned int size, char* key)
+inline void decrypt(char* dst, char* src, unsigned int size, char* key)
 {
     for (i=0; i<size; ++i) {
         dst[i] = src[i] ^ key[i%(SHA512_DIGEST_LENGTH/sizeof(char))];
     }
 }
-void encrypt(char* dst, char* src, unsigned int size, char* key)
+inline void encrypt(char* dst, char* src, unsigned int size, char* key)
 {
     for (i=0; i<size; ++i) {
         dst[i] = src[i] ^ key[i%(SHA512_DIGEST_LENGTH/sizeof(char))];

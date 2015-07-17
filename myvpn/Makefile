@@ -9,6 +9,6 @@
 #	gcc -Wall -c -O2 -o myvpn_aes.o myvpn_aes.c
 #	gcc -o myvpn_aes myvpn_aes.o evp_gcm.o -lcrypto -pthread 
 myvpn_xor: xor.o myvpn_xor.o
-	gcc -Wall -c -O2 -o xor.o xor.c
-	gcc -Wall -c -O2 -o myvpn_xor.o myvpn_xor.c
+	gcc -Wall -c -O3 -o xor.o xor.c
+	gcc -Wall -c -O3 -o myvpn_xor.o myvpn_xor.c
 	gcc -o myvpn_xor myvpn_xor.o xor.o -pthread -lcrypto
