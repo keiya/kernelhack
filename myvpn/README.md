@@ -89,3 +89,8 @@ iptables -t nat -I POSTROUTING -o eth0 \
       -s 192.168.1.1/32 -j MASQUERADE
 ```
 
+# Installation
+```
+user@ubu1:~/kernelhack/myvpn$ sudo apt install libssl-dev
+```
+ 
