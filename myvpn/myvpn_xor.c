@@ -111,10 +111,10 @@ void* tunlisten(void *args)
     vpn_addr.sin_family = AF_INET;
 
     char encrypted[PKTSIZ];
+    int len;
+    unsigned char pkt[PKTSIZ];
     while (1) {
         //fd_set fds;
-        int len;
-        unsigned char pkt[PKTSIZ];
 
         //FD_ZERO(&fds);
         //FD_SET(fd,&fds);
@@ -157,10 +157,11 @@ void* vpnlisten(void *args)
         addrlen = sizeof(senderinfo);
 
     char decrypted[PKTSIZ];
+    int byte;
     while(1) {
         //int byte = recv(sock, &buf, PKTSIZ, 0);
 
-        int byte = recvfrom(sock, buf, sizeof(buf) - 1, 0,
+        byte = recvfrom(sock, buf, sizeof(buf) - 1, 0,
         (struct sockaddr *)&senderinfo, &addrlen);
         decrypt(decrypted,buf,byte,key);
 
