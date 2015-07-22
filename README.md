@@ -9,6 +9,13 @@ files/config\_template や tools/kerninst.sh を参照のこと
 syscall/ にカーネル空間でのシステムコール実装とそれを呼び出すユーザー空間のプログラムがある
 ## 課題4 デバイス・ドライバの作成
 driver/
+なんの変哲もない内部バッファに読み書きができるだけのドライバ
+## 課題5 /proc ファイル・システムの作成
+procfs/
+procを利用してuptimeのパクりを作成
+## 課題6 定期的な仕事
+periodic/
+UDPでHeartbeatビーコンを送信するカーネルモジュール、kthread使用
 ## 課題9 その他 (VPNをつくりました)
 TUNデバイスを使ってL3のVPNをしてみる
 
