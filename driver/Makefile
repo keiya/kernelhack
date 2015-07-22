@@ -3,7 +3,7 @@
 obj-m := misc.o
 
 ifndef KERNEL_DIR
-KERNEL_DIR=~/linux-4.0.1/
+KERNEL_DIR=~/linux-4.0.7/
 endif
 
 all:

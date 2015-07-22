@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VER="4.0.5"
+VER="4.0.9"
 LINUXBASE="$HOME/linux-$VER"
 
 cd $LINUXBASE
