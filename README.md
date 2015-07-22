@@ -15,7 +15,7 @@ procfs/
 procを利用してuptimeのパクりを作成
 ## 課題6 定期的な仕事
 periodic/
-UDPでHeartbeatビーコンを送信するカーネルモジュール、kthread使用
+UDPで定期的にHeartbeatビーコンを送信するカーネルモジュール、kthread使用
 ## 課題9 その他 (VPNをつくりました)
 TUNデバイスを使ってL3のVPNをしてみる
 
@@ -24,6 +24,8 @@ TUNデバイスを使ってL3のVPNをしてみる
 * myvpn\_nat.c
   * クライアント側にあるfirewallやNATに邪魔されないよう、サーバはクライアントのソースポートに返事をするようにした。
   * サーバはクライアントから最初の1パケットを見てからはじめてクライアントのポートを知るので、かならずクライアントが何かパケットを送ってこないとサーバからクライアントへは届けられない。
+* myvpn\_xor.c
+  * myvpn\_natの機能に加え単純な512ビット鍵でXOR(ECB)による暗号化を実装。
 
 詳細は以下のREADME.md
 ( https://github.com/keiya/kernelhack/tree/master/myvpn )
